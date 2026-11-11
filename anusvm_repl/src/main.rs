@@ -1,5 +1,5 @@
-use std::io::{BufRead, stdin, stdout, Write};
-use anusvm_core::AnusVirtualMachine;
+use std::io::{BufRead, Write, stdin, stdout};
+use anusvm_core::AnusVM;
 use crate::{lexer::{Lexer, Token}, parser::Parser};
 
 mod lexer;
@@ -7,10 +7,6 @@ mod parser;
 
 // anusVM™ REPL
 fn main() -> anyhow::Result<()> {
-  let _vm = AnusVirtualMachine::new();
-  let mut lexer = Lexer::new();
-  let _parser = Parser::new();
-
   println!("{}\n{}\n{}\n{}\n{}",
     "anus Virtual Machine™ REPL",
     format!(
@@ -23,6 +19,12 @@ fn main() -> anyhow::Result<()> {
     format!("{} profile built on {}", env!("BUILDDATA_PROFILE"), env!("BUILDDATA_USER")),
     format!("build at {}", env!("BUILDDATA_TIME"))
   );
+
+  let vm = AnusVM::new();
+  let mut lexer = Lexer::new();
+  let _parser = Parser::new();
+
+  println!("stackSize = {}, allocated memory = {}KiB", vm.stack_size(), vm.stack_allocated_memory() / 1024);
 
   let stdin = stdin();
   let mut stdout = stdout();
@@ -46,7 +48,7 @@ fn main() -> anyhow::Result<()> {
     let token_buffer = lexer.buffer();
 
     if let Some(command) = token_buffer.get(0) {
-      if command.to_owned() == Token::Identifier("quit".to_string()) {
+      if command.to_owned() == Token::Identifier("exit".to_string()) {
         break
       }
     }

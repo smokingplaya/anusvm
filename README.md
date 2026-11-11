@@ -12,3 +12,5 @@ cd anusvm_repl
 # building & running REPL
 cargo run
 ```
+
+![important thing](./assets/javavm.png)
