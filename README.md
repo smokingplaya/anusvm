@@ -3,12 +3,12 @@
 anus Virtual Machine™
 ---
 
-This repository contains `cli` for interacting with `anusVM™ bytecode`, and anusVM implementation
+This repository contains `REPL` for interacting with `anusVM™ bytecode`, and anusVM implementation
 
 ## Usage
 ```sh
-# anusVM CLI is only way to interact with anusVM (for a while)
-cd anusvm_cli
-# building & running cli
+# anusVM REPL is only way to interact with anusVM (for a while)
+cd anusvm_repl
+# building & running REPL
 cargo run
 ```

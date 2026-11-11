@@ -1,5 +1,5 @@
 [workspace]
-members = ["anusvm_core", "anusvm_cli"]
+members = ["anusvm_core", "anusvm_repl"]
 resolver = "3"
 
 [workspace.package]

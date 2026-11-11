@@ -62,7 +62,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "anusvm_cli"
+name = "anusvm_core"
+version = "0.1.0"
+
+[[package]]
+name = "anusvm_repl"
 version = "0.1.0"
 dependencies = [
  "anusvm_core",
@@ -72,10 +76,6 @@ dependencies = [
  "log",
  "thiserror",
 ]
-
-[[package]]
-name = "anusvm_core"
-version = "0.1.0"
 
 [[package]]
 name = "anyhow"
