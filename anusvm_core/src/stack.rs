@@ -45,7 +45,7 @@ impl AnusVMStack {
 
   pub fn pop(&mut self) -> Option<Object> {
     // cheap af
-    let value = self.inner[self.len].take();
+    let value = self.inner[self.len - 1].take();
     self.len -= 1;
 
     value
@@ -69,7 +69,23 @@ impl AnusVMStack {
     value.to_owned()
   }
 
-  pub fn read_typechecked(&self, index: AnusVMStackIndex, object_type: ObjectType) -> Result<Option<Object>, AnusVMStackError> {
+  pub fn pop_typechecked(&mut self, object_type: ObjectType) -> Result<Object, AnusVMStackError> {
+    let value = self.pop();
+    let value_type = value.as_ref()
+      .map_or(ObjectType::Nil, |value| value.r#type());
+
+    if value_type != object_type {
+      return Err(AnusVMStackError::MismatchedTypes(object_type, value_type))
+    }
+
+    if let Some(value) = value {
+      return Ok(value)
+    }
+
+    unreachable!()
+  }
+
+  pub fn read_typechecked(&self, index: AnusVMStackIndex, object_type: ObjectType) -> Result<Object, AnusVMStackError> {
     let value = self.read(index);
     let value_type = value.as_ref()
       .map_or(ObjectType::Nil, |value| value.r#type());
@@ -78,11 +94,15 @@ impl AnusVMStack {
       return Err(AnusVMStackError::MismatchedTypes(object_type, value_type))
     }
 
-    Ok(value)
+    if let Some(value) = value {
+      return Ok(value)
+    }
+
+    unreachable!()
   }
 
-  pub fn dump_stack(&self) -> AnusVMStackInner {
-    self.inner.clone()
+  pub fn snapshot(&self) -> &[Option<Object>] {
+    &self.inner[0..self.len]
   }
 }
 

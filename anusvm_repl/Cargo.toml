@@ -6,7 +6,7 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-anyhow = "1.0.104"
+anyhow = { workspace = true }
 env_logger = "0.11.11"
 log = "0.4.35"
 anusvm_core = { path = "../anusvm_core" }

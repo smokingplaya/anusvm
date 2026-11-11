@@ -4,7 +4,7 @@ use crate::bytecode::ByteCode;
 // if you modify Object, you also should modify ObjectType
 // todo create Object and ObjectType in one macro
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub enum Object {
   #[default]
   Nil,
@@ -43,14 +43,28 @@ impl Object {
   pub fn is(&self, object_type: ObjectType) -> bool {
     self.r#type() == object_type
   }
+
+  pub unsafe fn read_int(&self) -> usize {
+    match self {
+      Self::Number(usize) => *usize,
+      _ => panic!("trying Object::read_int() on non `Number` Object")
+    }
+  }
+
+  pub unsafe fn read_float(&self) -> f32 {
+    match self {
+      Self::Float(float) => *float,
+      _ => panic!("trying Object::read_float() on non `Float` Object")
+    }
+  }
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct FunctionArguments {
   // r#
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub struct Function {
   name: String,
   arguments: FunctionArguments,

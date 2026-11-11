@@ -12,25 +12,22 @@ impl AnusVM {
 }
 
 impl AnusVM {
-  pub fn execute(bytecode: &ByteCode) -> Result<(), AnusVMError> {
-    todo!()
+  pub fn execute(&mut self, bytecode: &ByteCode) -> Result<(), AnusVMError> {
+    bytecode.iter()
+      .try_for_each(|a| a.execute(&mut self.stack))
+      .map_err(|e| return AnusVMError::InvalidByteCode(e.to_string()))
   }
 }
 
 impl AnusVM {
   #[inline]
-  pub fn stack_size(&self) -> usize {
-    self.stack.stack_size()
-  }
-
-  #[inline]
-  pub fn stack_allocated_memory(&self) -> usize {
-    self.stack.stack_allocated_memory()
+  pub fn stack(&mut self) -> &mut AnusVMStack {
+    &mut self.stack
   }
 }
 
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum AnusVMError {
-  #[error("BrokenByteCode")]
-  BrokenByteCode,
+  #[error("InvalidByteCode: {0}")]
+  InvalidByteCode(String),
 }

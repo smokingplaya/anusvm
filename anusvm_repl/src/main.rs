@@ -1,5 +1,5 @@
 use std::io::{BufRead, Write, stdin, stdout};
-use anusvm_core::AnusVM;
+use anusvm_core::{AnusVM, ByteCode, ByteCodeInstruction, Object};
 use crate::{lexer::{Lexer, Token}, parser::Parser};
 
 mod lexer;
@@ -20,11 +20,12 @@ fn main() -> anyhow::Result<()> {
     format!("build at {}", env!("BUILDDATA_TIME"))
   );
 
-  let vm = AnusVM::new();
+  let mut vm = AnusVM::new();
   let mut lexer = Lexer::new();
   let _parser = Parser::new();
+  let stack = vm.stack();
 
-  println!("stackSize = {}, allocated memory = {}KiB", vm.stack_size(), vm.stack_allocated_memory() / 1024);
+  println!("stackSize = {}, allocated memory = {}KiB", stack.stack_size(), stack.stack_allocated_memory() / 1024);
 
   let stdin = stdin();
   let mut stdout = stdout();
