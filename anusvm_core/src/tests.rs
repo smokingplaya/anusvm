@@ -23,7 +23,7 @@ fn number_addition() -> anyhow::Result<()> {
 
   let stack = vm.stack();
 
-  assert!(stack.pop() == Some(Object::Number(6)));
+  assert!(stack.pop() == Object::Number(6));
 
   Ok(())
 }

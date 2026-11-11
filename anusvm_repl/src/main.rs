@@ -63,18 +63,18 @@ fn main() -> anyhow::Result<()> {
     let bytecode = parser.buffer();
     vm.execute(bytecode)?;
 
-    if let Some(object) = vm.stack().top() {
-      let to_print = match object {
-        Object::Nil => "nil",
-        Object::Boolean(bool) => &bool.to_string(),
-        Object::Function(func) => func.name(),
-        Object::Number(number) => &number.to_string(),
-        Object::Float(float) => &float.to_string(),
-        Object::String(string) => string,
-      };
+    let object = vm.stack().top();
 
-      println!("$ {to_print}");
-    }
+    let to_print = match object {
+      Object::Nil => continue,
+      Object::Boolean(bool) => &bool.to_string(),
+      Object::Function(func) => func.name(),
+      Object::Number(number) => &number.to_string(),
+      Object::Float(float) => &float.to_string(),
+      Object::String(string) => string,
+    };
+
+    println!("$ {to_print}");
   }
 
 

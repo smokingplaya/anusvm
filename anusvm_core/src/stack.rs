@@ -20,7 +20,7 @@ pub enum AnusVMStackIndexError {
   InvalidIndex
 }
 
-pub type AnusVMStackInner = [Option<Object>; STACK_SIZE];
+pub type AnusVMStackInner = [Object; STACK_SIZE];
 
 #[derive(Debug, Clone)]
 pub struct AnusVMStack {
@@ -31,10 +31,7 @@ pub struct AnusVMStack {
 impl Default for AnusVMStack {
   fn default() -> Self {
     Self {
-      // todo change to Object::Nil
-      // it'll cost same memory
-      // but idiomatically would be better
-      inner: [const { None }; STACK_SIZE],
+      inner: [const { Object::Nil }; STACK_SIZE],
       len: 0
     }
   }
@@ -46,9 +43,10 @@ impl AnusVMStack {
     self.len
   }
 
-  pub fn pop(&mut self) -> Option<Object> {
+  pub fn pop(&mut self) -> Object {
     // cheap af
-    let value = self.inner[self.len - 1].take();
+    let index = if self.len == 0 { 0 } else {self.len - 1};
+    let value = std::mem::replace(&mut self.inner[index], Object::Nil);
     self.len -= 1;
 
     value
@@ -59,7 +57,7 @@ impl AnusVMStack {
       return Err(AnusVMStackError::StackOverflow)
     }
 
-    self.inner[self.len] = Some(object);
+    self.inner[self.len] = object;
     self.len += 1;
 
     Ok(())
@@ -67,49 +65,42 @@ impl AnusVMStack {
 
   #[inline]
   /// Reads `self.inner` and cloning its value
-  pub fn read(&self, index: AnusVMStackIndex) -> Option<Object> {
+  pub fn read(&self, index: AnusVMStackIndex) -> Object {
     let value = &self.inner[index.0];
     value.to_owned()
   }
 
   pub fn pop_typechecked(&mut self, object_type: ObjectType) -> Result<Object, AnusVMStackError> {
     let value = self.pop();
-    let value_type = value.as_ref()
-      .map_or(ObjectType::Nil, |value| value.r#type());
+    let value_type = value.r#type();
 
     if value_type != object_type {
       return Err(AnusVMStackError::MismatchedTypes(object_type, value_type))
     }
 
-    if let Some(value) = value {
-      return Ok(value)
-    }
-
-    unreachable!()
+    Ok(value)
   }
 
   pub fn read_typechecked(&self, index: AnusVMStackIndex, object_type: ObjectType) -> Result<Object, AnusVMStackError> {
     let value = self.read(index);
-    let value_type = value.as_ref()
-      .map_or(ObjectType::Nil, |value| value.r#type());
+    let value_type = value.r#type();
 
     if value_type != object_type {
       return Err(AnusVMStackError::MismatchedTypes(object_type, value_type))
     }
 
-    if let Some(value) = value {
-      return Ok(value)
-    }
-
-    unreachable!()
+    Ok(value)
   }
 
-  pub fn snapshot(&self) -> &[Option<Object>] {
+  #[inline]
+  pub fn snapshot(&self) -> &[Object] {
     &self.inner[0..self.len]
   }
 
-  pub fn top(&self) -> &Option<Object> {
-    &self.inner[self.len - 1]
+  #[inline]
+  pub fn top(&self) -> &Object {
+    let index = if self.len == 0 { 0 } else {self.len - 1};
+    &self.inner[index]
   }
 }
 
