@@ -1,6 +1,10 @@
-use std::collections::HashSet;
+use std::{cell::LazyCell, collections::HashSet};
 use anyhow::anyhow;
 use crate::lexer::convertable_buffer::{ConvertableBuffer, ConvertableBufferError};
+
+const KEYWORDS: LazyCell<HashSet<&'static str>> = LazyCell::new(|| {
+  HashSet::from(["add", "addf", "sub", "subf", "pushnil", "pushbool", "pushnum", "pushft", "pushstr", "pushfn", "pop", "definefn"])
+});
 
 mod convertable_buffer;
 
@@ -25,7 +29,7 @@ impl<'a> Lexer<'a> {
   #[inline(always)]
   pub fn new() -> Self {
     Self {
-      keywords: HashSet::from(["add", "addf", "sub", "subf", "pushnil", "pushbool", "pushnum", "pushft", "pushstr", "pushfn", "pop", "definefn"]),
+      keywords: KEYWORDS.clone(),
       buffer: Vec::with_capacity(16),
       collectable_buffer: ConvertableBuffer::new()
     }

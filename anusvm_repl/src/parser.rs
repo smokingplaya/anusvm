@@ -72,6 +72,10 @@ impl Parser {
       }
     }
 
+    if index != 2 {
+      return Err(ParserError::InvalidArgument("command excepts two Number arguments".to_string()))
+    }
+
     Ok(buffer)
   }
 
@@ -99,5 +103,7 @@ impl Parser {
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum ParserError {
   #[error("InvalidSyntax: {0}")]
-  InvalidSyntax(String)
+  InvalidSyntax(String),
+  #[error("InvalidArgument: {0}")]
+  InvalidArgument(String)
 }
