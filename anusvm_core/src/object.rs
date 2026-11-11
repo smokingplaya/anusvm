@@ -9,7 +9,7 @@ pub enum Object {
   #[default]
   Nil,
   Boolean(bool),
-  Number(usize),
+  Number(isize),
   Float(f32),
   String(String),
   Function(Function)
@@ -44,9 +44,9 @@ impl Object {
     self.r#type() == object_type
   }
 
-  pub unsafe fn read_int(&self) -> usize {
+  pub unsafe fn read_int(&self) -> isize {
     match self {
-      Self::Number(usize) => *usize,
+      Self::Number(isize) => *isize,
       _ => panic!("trying Object::read_int() on non `Number` Object")
     }
   }
@@ -69,4 +69,10 @@ pub struct Function {
   name: String,
   arguments: FunctionArguments,
   instructions: ByteCode
+}
+
+impl Function {
+  pub fn name(&self) -> &String {
+    &self.name
+  }
 }

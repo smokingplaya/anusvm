@@ -1,5 +1,5 @@
+use anusvm_core::{AnusVM, Object};
 use std::io::{BufRead, Write, stdin, stdout};
-use anusvm_core::{AnusVM, ByteCode, ByteCodeInstruction, Object};
 use crate::{lexer::{Lexer, Token}, parser::Parser};
 
 mod lexer;
@@ -22,10 +22,9 @@ fn main() -> anyhow::Result<()> {
 
   let mut vm = AnusVM::new();
   let mut lexer = Lexer::new();
-  let _parser = Parser::new();
-  let stack = vm.stack();
+  let mut parser = Parser::new();
 
-  println!("stackSize = {}, allocated memory = {}KiB", stack.stack_size(), stack.stack_allocated_memory() / 1024);
+  debug_stack_info(&mut vm);
 
   let stdin = stdin();
   let mut stdout = stdout();
@@ -55,7 +54,34 @@ fn main() -> anyhow::Result<()> {
     }
 
     dbg!(&token_buffer);
+
+    if let Err(err) = parser.parserize(token_buffer) {
+      println!("{err}");
+      continue
+    };
+
+    let bytecode = parser.buffer();
+    vm.execute(bytecode)?;
+
+    if let Some(object) = vm.stack().top() {
+      let to_print = match object {
+        Object::Nil => "nil",
+        Object::Boolean(bool) => &bool.to_string(),
+        Object::Function(func) => func.name(),
+        Object::Number(number) => &number.to_string(),
+        Object::Float(float) => &float.to_string(),
+        Object::String(string) => string,
+      };
+
+      println!("$ {to_print}");
+    }
   }
 
+
   Ok(())
+}
+
+fn debug_stack_info(vm: &mut AnusVM) {
+  let stack = vm.stack();
+  println!("stackSize = {}, allocated memory = {}KiB", stack.stack_size(), stack.stack_allocated_memory() / 1024);
 }

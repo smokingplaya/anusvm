@@ -9,7 +9,7 @@ mod convertable_buffer;
 pub enum Token {
   Keyword(String),
   Identifier(String),
-  Number(i64)
+  Number(isize)
 }
 
 // allocation hater
@@ -25,7 +25,7 @@ impl<'a> Lexer<'a> {
   #[inline(always)]
   pub fn new() -> Self {
     Self {
-      keywords: HashSet::from(["add", "sub"]),
+      keywords: HashSet::from(["add", "addf", "sub", "subf", "pushnil", "pushbool", "pushnum", "pushft", "pushstr", "pushfn", "pop", "definefn"]),
       buffer: Vec::with_capacity(16),
       collectable_buffer: ConvertableBuffer::new()
     }
@@ -123,8 +123,6 @@ impl<'a> Lexer<'a> {
 
 #[derive(thiserror::Error, Debug)]
 pub enum LexingError {
-  #[error("Invalid input")]
-  InvalidInput,
   #[error("Unknown token '{0}' ({1})")]
   UnknownToken(char, usize)
 }

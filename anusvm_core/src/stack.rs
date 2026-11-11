@@ -31,6 +31,9 @@ pub struct AnusVMStack {
 impl Default for AnusVMStack {
   fn default() -> Self {
     Self {
+      // todo change to Object::Nil
+      // it'll cost same memory
+      // but idiomatically would be better
       inner: [const { None }; STACK_SIZE],
       len: 0
     }
@@ -103,6 +106,10 @@ impl AnusVMStack {
 
   pub fn snapshot(&self) -> &[Option<Object>] {
     &self.inner[0..self.len]
+  }
+
+  pub fn top(&self) -> &Option<Object> {
+    &self.inner[self.len - 1]
   }
 }
 

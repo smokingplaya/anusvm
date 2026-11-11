@@ -72,12 +72,14 @@ declare_converable_num!(u16);
 declare_converable_num!(u32);
 declare_converable_num!(u64);
 declare_converable_num!(u128);
+declare_converable_num!(usize);
 
 declare_converable_num!(i8);
 declare_converable_num!(i16);
 declare_converable_num!(i32);
 declare_converable_num!(i64);
 declare_converable_num!(i128);
+declare_converable_num!(isize);
 
 declare_converable_num!(f32);
 declare_converable_num!(f64);

@@ -1,18 +1,103 @@
+use anusvm_core::{ByteCode, ByteCodeInstruction, ObjectType};
 use crate::lexer::Token;
 
-pub struct Parser;
+#[derive(Debug, Clone)]
+pub struct Parser {
+  buffer: ByteCode
+}
 
 impl Parser {
   pub fn new() -> Self {
-    Self {}
+    Self {
+      buffer: Vec::with_capacity(32)
+    }
   }
 }
 
 impl Parser {
-  pub fn parserize(&self, tokens: &Vec<Token>) -> Result<(), ParserError> {
+  #[inline]
+  pub fn buffer(&self) -> &ByteCode {
+    &self.buffer
+  }
+}
+
+
+impl Parser {
+  pub fn parserize(&mut self, tokens: &Vec<Token>) -> Result<(), ParserError> {
+    let mut cursor = 0;
+    let len = tokens.len();
+
+    while cursor < len {
+      let token = tokens.get(cursor).unwrap();
+
+      match token {
+        Token::Keyword(keyword) => {
+          cursor += 1;
+
+          match keyword.as_str() {
+            "add" => self.parse_add(&mut cursor, &tokens)?,
+            "definefn" => self.parse_definefn(&mut cursor, &tokens)?,
+            _ => {}
+          }
+        },
+        Token::Identifier(_) => {},
+        Token::Number(_n) => {},
+      }
+
+      cursor += 1;
+    }
+
     Ok(())
   }
 }
 
-#[derive(Debug, Clone, thiserror::Error)]
-pub enum ParserError {}
+impl Parser {
+  fn parse_two_args<T: Copy + Default, F: Fn(&Token) -> Result<T, ParserError>>(&self, cursor: &mut usize, tokens: &Vec<Token>, predicate: F) -> Result<[T; 2], ParserError> {
+    let len = tokens.len();
+
+    let mut index = 0;
+    let mut buffer: [T; 2] = [T::default(); 2];
+
+    while *cursor < len {
+      let token = tokens.get(*cursor)
+        .unwrap();
+
+      buffer[index] = predicate(token)?;
+
+      index += 1;
+      *cursor += 1;
+
+      if index == 2 {
+        break
+      }
+    }
+
+    Ok(buffer)
+  }
+
+  fn parse_add(&mut self, cursor: &mut usize, tokens: &Vec<Token>) -> Result<(), ParserError> {
+    let buffer = self.parse_two_args::<isize, _>(cursor, tokens, |token| {
+      match token {
+        Token::Number(number) => Ok(*number),
+        _ => Err(ParserError::InvalidSyntax("expected Number, found unknown".to_string()))
+      }
+    })?;
+
+    self.buffer.push(ByteCodeInstruction::PushNum(buffer[0]));
+    self.buffer.push(ByteCodeInstruction::PushNum(buffer[1]));
+
+    self.buffer.push(ByteCodeInstruction::Add);
+
+    Ok(())
+  }
+
+  fn parse_definefn(&self, cursor: &mut usize, tokens: &Vec<Token>) -> Result<(), ParserError> {
+    Ok(())
+  }
+}
+
+#[derive(thiserror::Error, Debug, Clone)]
+pub enum ParserError {
+  #[error("InvalidSyntax: {0}")]
+  InvalidSyntax(String)
+}

@@ -1,4 +1,4 @@
-use crate::{object::{Object, ObjectType}, stack::AnusVMStack};
+use crate::{Function, object::{Object, ObjectType}, stack::AnusVMStack};
 
 pub type ByteCode = Vec<ByteCodeInstruction>;
 
@@ -8,6 +8,13 @@ pub enum ByteCodeInstruction {
   AddF,
   Sub,
   SubF,
+  PushNil,
+  PushBool(bool),
+  PushNum(isize),
+  PushFt(f32),
+  PushStr(String),
+  PushFn(Function),
+  Pop
 }
 
 impl ByteCodeInstruction {
@@ -37,6 +44,13 @@ impl ByteCodeInstruction {
         // SAFETY: type check complete above
         stack.push(Object::Float(unsafe { a.read_float() - b.read_float() }))?;
       },
+      Self::PushNil => stack.push(Object::Nil)?,
+      Self::PushBool(bool) => stack.push(Object::Boolean(*bool))?,
+      Self::PushNum(num) => stack.push(Object::Number(*num))?,
+      Self::PushFt(ft) => stack.push(Object::Float(*ft))?,
+      Self::PushStr(str) => stack.push(Object::String(str.clone()))?,
+      Self::PushFn(func) => stack.push(Object::Function(func.clone()))?,
+      Self::Pop => { stack.pop(); },
     };
 
     Ok(())
