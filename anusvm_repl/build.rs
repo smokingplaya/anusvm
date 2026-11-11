@@ -51,10 +51,7 @@ fn collect_build_data() -> anyhow::Result<BuildData> {
 
   let user = match option_env!("USERNAME") {
     Some(user) => user,
-    None => match option_env!("USER") {
-        Some(user) => user,
-        None => "unknown",
-    },
+    None => option_env!("USER").unwrap_or("unknown"),
   };
 
   let user = user.to_string();

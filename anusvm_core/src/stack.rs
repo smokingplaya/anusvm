@@ -44,16 +44,19 @@ impl AnusVMStack {
   }
 
   pub fn pop(&mut self) -> Object {
+    if self.len == 0 {
+      return Object::Nil;
+    }
+
     // cheap af
-    let index = if self.len == 0 { 0 } else {self.len - 1};
-    let value = std::mem::replace(&mut self.inner[index], Object::Nil);
+    let value = std::mem::replace(&mut self.inner[self.len - 1], Object::Nil);
     self.len -= 1;
 
     value
   }
 
   pub fn push(&mut self, object: Object) -> Result<(), AnusVMStackError> {
-    if self.len + 1 >= self.inner.len() {
+    if self.len >= self.inner.len() {
       return Err(AnusVMStackError::StackOverflow)
     }
 
@@ -64,12 +67,12 @@ impl AnusVMStack {
   }
 
   #[inline]
-  /// Reads `self.inner` and cloning its value
-  pub fn read(&self, index: AnusVMStackIndex) -> Object {
-    let value = &self.inner[index.0];
-    value.to_owned()
+  /// Reads `self.inner`
+  pub fn get(&self, index: AnusVMStackIndex) -> &Object {
+    &self.inner[index.0]
   }
 
+  #[inline]
   pub fn pop_typechecked(&mut self, object_type: ObjectType) -> Result<Object, AnusVMStackError> {
     let value = self.pop();
     let value_type = value.r#type();
@@ -81,8 +84,8 @@ impl AnusVMStack {
     Ok(value)
   }
 
-  pub fn read_typechecked(&self, index: AnusVMStackIndex, object_type: ObjectType) -> Result<Object, AnusVMStackError> {
-    let value = self.read(index);
+  pub fn get_typechecked(&self, index: AnusVMStackIndex, object_type: ObjectType) -> Result<&Object, AnusVMStackError> {
+    let value = self.get(index);
     let value_type = value.r#type();
 
     if value_type != object_type {

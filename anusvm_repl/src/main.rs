@@ -1,5 +1,5 @@
 use anusvm_core::{AnusVM, Object};
-use std::io::{BufRead, Write, stdin, stdout};
+use std::{io::{BufRead, Write, stdin, stdout}, time::Instant};
 use crate::{lexer::{Lexer, Token}, parser::Parser};
 
 mod lexer;
@@ -47,8 +47,8 @@ fn main() -> anyhow::Result<()> {
 
     let token_buffer = lexer.buffer();
 
-    if let Some(command) = token_buffer.get(0) {
-      if command.to_owned() == Token::Identifier("exit".to_string()) {
+    if let Some(command) = token_buffer.first() {
+      if *command == Token::Identifier("exit".to_string()) {
         break
       }
     }
@@ -61,7 +61,9 @@ fn main() -> anyhow::Result<()> {
     };
 
     let bytecode = parser.buffer();
+    let instant = Instant::now();
     vm.execute(bytecode)?;
+    println!("vm.execute elapsed {}ns", instant.elapsed().as_nanos());
 
     let object = vm.stack().top();
 

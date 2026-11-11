@@ -5,6 +5,13 @@ version = "0.1.0"
 edition.workspace = true
 license.workspace = true
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
 [dependencies]
 anyhow = { workspace = true }
 env_logger = "0.11.11"

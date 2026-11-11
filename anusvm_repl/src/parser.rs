@@ -1,4 +1,4 @@
-use anusvm_core::{ByteCode, ByteCodeInstruction, ObjectType};
+use anusvm_core::{ByteCode, ByteCodeInstruction, Object};
 use crate::lexer::Token;
 
 #[derive(Debug, Clone)]
@@ -35,13 +35,15 @@ impl Parser {
           cursor += 1;
 
           match keyword.as_str() {
-            "add" => self.parse_add(&mut cursor, &tokens)?,
-            "definefn" => self.parse_definefn(&mut cursor, &tokens)?,
+            "add" => self.parse_add(&mut cursor, tokens)?,
+            "definefn" => self.parse_definefn(&mut cursor, tokens)?,
             _ => {}
           }
         },
         Token::Identifier(_) => {},
         Token::Number(_n) => {},
+        Token::Float(_) => {},
+        Token::String(_) => {}
       }
 
       cursor += 1;
@@ -52,7 +54,7 @@ impl Parser {
 }
 
 impl Parser {
-  fn parse_two_args<T: Copy + Default, F: Fn(&Token) -> Result<T, ParserError>>(&self, cursor: &mut usize, tokens: &Vec<Token>, predicate: F) -> Result<[T; 2], ParserError> {
+  fn parse_two_args<T: Copy + Default, F: Fn(&Token) -> Result<T, ParserError>>(&self, cursor: &mut usize, tokens: &[Token], predicate: F) -> Result<[T; 2], ParserError> {
     let len = tokens.len();
 
     let mut index = 0;
@@ -79,7 +81,7 @@ impl Parser {
     Ok(buffer)
   }
 
-  fn parse_add(&mut self, cursor: &mut usize, tokens: &Vec<Token>) -> Result<(), ParserError> {
+  fn parse_add(&mut self, cursor: &mut usize, tokens: &[Token]) -> Result<(), ParserError> {
     let buffer = self.parse_two_args::<isize, _>(cursor, tokens, |token| {
       match token {
         Token::Number(number) => Ok(*number),
@@ -87,15 +89,15 @@ impl Parser {
       }
     })?;
 
-    self.buffer.push(ByteCodeInstruction::PushNum(buffer[0]));
-    self.buffer.push(ByteCodeInstruction::PushNum(buffer[1]));
+    self.buffer.push(ByteCodeInstruction::Push(Object::Number(buffer[0])));
+    self.buffer.push(ByteCodeInstruction::Push(Object::Number(buffer[1])));
 
     self.buffer.push(ByteCodeInstruction::Add);
 
     Ok(())
   }
 
-  fn parse_definefn(&self, cursor: &mut usize, tokens: &Vec<Token>) -> Result<(), ParserError> {
+  fn parse_definefn(&self, cursor: &mut usize, tokens: &[Token]) -> Result<(), ParserError> {
     Ok(())
   }
 }

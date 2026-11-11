@@ -15,7 +15,7 @@ impl AnusVM {
   pub fn execute(&mut self, bytecode: &ByteCode) -> Result<(), AnusVMError> {
     bytecode.iter()
       .try_for_each(|a| a.execute(&mut self.stack))
-      .map_err(|e| return AnusVMError::InvalidByteCode(e.to_string()))
+      .map_err(|e| AnusVMError::InvalidByteCode(e.to_string()))
   }
 }
 

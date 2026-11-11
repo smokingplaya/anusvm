@@ -7,6 +7,13 @@ license.workspace = true
 [lib]
 crate-type = ["rlib", "dylib"]
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
 [dependencies]
 anyhow = { workspace = true }
 thiserror = { workspace = true }

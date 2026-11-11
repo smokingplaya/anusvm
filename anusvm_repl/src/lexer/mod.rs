@@ -1,10 +1,8 @@
-use std::{cell::LazyCell, collections::HashSet};
+use std::collections::HashSet;
 use anyhow::anyhow;
 use crate::lexer::convertable_buffer::{ConvertableBuffer, ConvertableBufferError};
 
-const KEYWORDS: LazyCell<HashSet<&'static str>> = LazyCell::new(|| {
-  HashSet::from(["add", "addf", "sub", "subf", "pushnil", "pushbool", "pushnum", "pushft", "pushstr", "pushfn", "pop", "definefn"])
-});
+const KEYWORDS: [&str; 12] = ["add", "addf", "sub", "subf", "pushnil", "pushbool", "pushnum", "pushft", "pushstr", "pushfn", "pop", "definefn"];
 
 mod convertable_buffer;
 
@@ -13,7 +11,9 @@ mod convertable_buffer;
 pub enum Token {
   Keyword(String),
   Identifier(String),
-  Number(isize)
+  Number(isize),
+  Float(f32),
+  String(String)
 }
 
 // allocation hater
@@ -29,7 +29,7 @@ impl<'a> Lexer<'a> {
   #[inline(always)]
   pub fn new() -> Self {
     Self {
-      keywords: KEYWORDS.clone(),
+      keywords: HashSet::from(KEYWORDS),
       buffer: Vec::with_capacity(16),
       collectable_buffer: ConvertableBuffer::new()
     }
@@ -57,10 +57,17 @@ impl<'a> Lexer<'a> {
         continue;
       }
 
-      if char.is_digit(10) {
+      // Token::Number
+      if char.is_ascii_digit() {
         self.collect_number(&mut cursor, &mut chars)?;
         // safety: right above
         self.buffer.push(Token::Number(unsafe { self.collectable_buffer.convert() }));
+      // Token::Identifier
+      } else if char == '\"' || char == '\'' {
+        self.collect_string(&mut cursor, &mut chars)?;
+        self.buffer.push(Token::String(unsafe { self.collectable_buffer.convert() }));
+      // Token::Float todo
+      // UnknownToken
       } else if char.is_alphabetic() {
         self.collect_ident(&mut cursor, &mut chars)?;
 
@@ -70,6 +77,7 @@ impl<'a> Lexer<'a> {
           true => self.buffer.push(Token::Keyword(identifier)),
           false => self.buffer.push(Token::Identifier(identifier)),
         };
+      // Token::String
       } else {
         return Err(anyhow!(LexingError::UnknownToken(char.to_owned(), cursor + 1)))
       }
@@ -81,7 +89,7 @@ impl<'a> Lexer<'a> {
   }
 
   #[inline]
-  fn collect_symbols<F: Fn(&char) -> bool>(&mut self, cursor: &mut usize, chars: &mut Vec<char>, predicate: F) -> Result<(), ConvertableBufferError> {
+  fn collect_symbols<F: Fn(&char) -> bool>(&mut self, cursor: &mut usize, chars: &mut [char], predicate: F) -> Result<(), ConvertableBufferError> {
     let len = chars.len();
 
     // cleaning collectable_buffer
@@ -91,7 +99,7 @@ impl<'a> Lexer<'a> {
       let char = chars.get(*cursor).unwrap();
 
       if predicate(char) {
-        self.collectable_buffer.push(char.to_owned())?;
+        self.collectable_buffer.push(*char)?;
       } else {
         break
       }
@@ -109,7 +117,18 @@ impl<'a> Lexer<'a> {
 
   #[inline(always)]
   fn collect_number(&mut self, cursor: &mut usize, chars: &mut Vec<char>) -> Result<(), ConvertableBufferError> {
+    self.collect_symbols(cursor, chars, |char| char.is_ascii_digit())
+  }
+
+  #[inline(always)]
+  fn collect_float(&mut self, cursor: &mut usize, chars: &mut Vec<char>) -> Result<(), ConvertableBufferError> {
+    // todo
     self.collect_symbols(cursor, chars, |char| char.is_digit(10))
+  }
+
+  #[inline(always)]
+  fn collect_string(&mut self, cursor: &mut usize, chars: &mut Vec<char>) -> Result<(), ConvertableBufferError> {
+    self.collect_symbols(cursor, chars, |char| *char != '\"' || *char != '\'')
   }
 }
 
@@ -117,11 +136,6 @@ impl<'a> Lexer<'a> {
   #[inline(always)]
   pub fn buffer(&self) -> &Vec<Token> {
     &self.buffer
-  }
-
-  #[inline(always)]
-  pub fn keywords(&self) -> &HashSet<&'a str> {
-    &self.keywords
   }
 }
 

@@ -44,6 +44,7 @@ impl Object {
     self.r#type() == object_type
   }
 
+  #[inline]
   pub unsafe fn read_int(&self) -> isize {
     match self {
       Self::Number(isize) => *isize,
@@ -51,6 +52,7 @@ impl Object {
     }
   }
 
+  #[inline]
   pub unsafe fn read_float(&self) -> f32 {
     match self {
       Self::Float(float) => *float,
