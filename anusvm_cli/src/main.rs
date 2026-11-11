@@ -11,7 +11,7 @@ fn main() -> anyhow::Result<()> {
   let mut lexer = Lexer::new();
   let parser = Parser::new();
 
-  println!("anus Virtual Machine™\n");
+  println!("anus Virtual Machine™\n{} ({} {}) by smokingplaya<3", env!("CARGO_PKG_VERSION"), env!("GIT_COMMIT_SHORT"), env!("GIT_BRANCH"));
 
   print!("> ");
   stdout().flush()?;
