@@ -11,18 +11,23 @@ fn main() -> anyhow::Result<()> {
   let mut lexer = Lexer::new();
   let _parser = Parser::new();
 
-  println!(
-    "anus Virtual Machine™ REPL Interactive environment v{} ({}-{})\nsmokingplaya 2026 (redistributed under {})",
-    env!("CARGO_PKG_VERSION"),
-    env!("GIT_COMMIT_SHORT"),
-    env!("GIT_BRANCH"),
-    env!("CARGO_PKG_LICENSE")
+  println!("{}\n{}\n{}\n{}\n{}",
+    "anus Virtual Machine™ REPL",
+    format!(
+      "interactive environment version {} ({}-{})",
+      env!("CARGO_PKG_VERSION"),
+      env!("CARGO_PKG_VERSION"),
+      env!("GIT_COMMIT_SHORT"),
+    ),
+    format!("smokingplaya 2026 (redistributed under the {} license)", env!("CARGO_PKG_LICENSE")),
+    format!("{} profile built on {}", env!("BUILDDATA_PROFILE"), env!("BUILDDATA_USER")),
+    format!("build at {}", env!("BUILDDATA_TIME"))
   );
 
   let stdin = stdin();
   let mut stdout = stdout();
   loop {
-    print!("& ");
+    print!("> ");
     stdout.flush()?;
 
     let mut line_buffer = String::with_capacity(16);
