@@ -12,9 +12,9 @@ impl AnusVM {
 }
 
 impl AnusVM {
-  pub fn execute(&mut self, bytecode: &ByteCode) -> Result<(), AnusVMError> {
+  pub fn execute(&mut self, bytecode: &ByteCode) -> Result<i32, AnusVMError> {
     bytecode.iter()
-      .try_for_each(|a| a.execute(&mut self.stack))
+      .try_fold(0, |acc, a| a.execute(self).map(|value| acc + value))
       .map_err(|e| AnusVMError::InvalidByteCode(e.to_string()))
   }
 }

@@ -74,6 +74,7 @@ fn main() -> anyhow::Result<()> {
       Object::Number(number) => &number.to_string(),
       Object::Float(float) => &float.to_string(),
       Object::String(string) => string,
+      Object::Error => &"unknown error".to_string()
     };
 
     println!("$ {to_print}");

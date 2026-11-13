@@ -1,4 +1,6 @@
-use crate::bytecode::ByteCode;
+mod function;
+
+pub use function::*;
 
 // IMPORTANT
 // if you modify Object, you also should modify ObjectType
@@ -12,7 +14,8 @@ pub enum Object {
   Number(isize),
   Float(f32),
   String(String),
-  Function(Function)
+  Function(Function),
+  Error
 }
 
 #[derive(Default, Debug, Clone, PartialEq)]
@@ -23,7 +26,8 @@ pub enum ObjectType {
   Number,
   Float,
   String,
-  Function
+  Function,
+  Error
 }
 
 impl Object {
@@ -36,6 +40,7 @@ impl Object {
       Self::Float(_) => ObjectType::Float,
       Self::String(_) => ObjectType::String,
       Self::Function(_) => ObjectType::Function,
+      Self::Error => ObjectType::Error
     }
   }
 
@@ -59,22 +64,12 @@ impl Object {
       _ => panic!("trying Object::read_float() on non `Float` Object")
     }
   }
-}
 
-#[derive(Default, Debug, Clone, PartialEq)]
-pub struct FunctionArguments {
-  // todo
-}
-
-#[derive(Default, Debug, Clone, PartialEq)]
-pub struct Function {
-  name: String,
-  arguments: FunctionArguments,
-  instructions: ByteCode
-}
-
-impl Function {
-  pub fn name(&self) -> &String {
-    &self.name
+  #[inline]
+  pub unsafe fn read_func(&self) -> &Function {
+    match self {
+      Self::Function(func) => func,
+      _ => panic!("trying Object::read_func() on non `Function` Object")
+    }
   }
 }

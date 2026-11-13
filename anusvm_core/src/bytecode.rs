@@ -1,6 +1,5 @@
-use anyhow::{anyhow, bail};
-
-use crate::{Function, object::{Object, ObjectType}, stack::{AnusVMStack, AnusVMStackError}};
+use anyhow::bail;
+use crate::{AnusVM, object::{Object, ObjectType}, stack::AnusVMStackError};
 
 pub type ByteCode = Vec<ByteCodeInstruction>;
 
@@ -11,50 +10,67 @@ pub enum ByteCodeInstruction {
   Sub,
   SubF,
   Push(Object),
+  Call,
   Pop
 }
 
 impl ByteCodeInstruction {
-  pub fn execute(&self, stack: &mut AnusVMStack) -> anyhow::Result<()> {
+  pub fn execute(&self, vm: &mut AnusVM) -> anyhow::Result<i32> {
+    // why do math operations returns -1 instead of 1?
+    // imagine the stack at this moment
+    // [Num1, Num2]
+    // and i.g Add instruction pops two values
+    // leaving the stack empty
+    // but then it puts 1 value
+    // and the stack size becomes 1
+    // so basically -1 shows how much stack top has changed
+    let stack = vm.stack();
     match self {
       Self::Add => {
-        let a = stack.pop();
-        let b = stack.pop();
-        let r#type = b.r#type();
+        let b = stack.pop_typechecked(ObjectType::Number)?;
+        let a = stack.pop_typechecked(ObjectType::Number)?;
 
-        let (a, b) = match (a, b) {
-          (Object::Number(a), Object::Number(b)) => (a, b),
-          _ => bail!(AnusVMStackError::MismatchedTypes(
-            ObjectType::Number,
-            r#type
-          ))
-        };
+        // SAFETY: type check completed above
+        stack.push(Object::Number(unsafe { a.read_int() + b.read_int() }))?;
 
-        // SAFETY: type check complete above
-        stack.push(Object::Number(a + b))?;
+        Ok::<_,anyhow::Error>(-1)
       },
       Self::AddF => {
-        let a = stack.pop_typechecked(ObjectType::Float)?;
         let b = stack.pop_typechecked(ObjectType::Float)?;
-        // SAFETY: type check complete above
+        let a = stack.pop_typechecked(ObjectType::Float)?;
+        // SAFETY: type check completed above
         stack.push(Object::Float(unsafe { a.read_float() + b.read_float() }))?;
+
+        Ok(-1)
       },
       Self::Sub => {
-        let a = stack.pop_typechecked(ObjectType::Number)?;
         let b = stack.pop_typechecked(ObjectType::Number)?;
-        // SAFETY: type check complete above
+        let a = stack.pop_typechecked(ObjectType::Number)?;
+        // SAFETY: type check completed above
         stack.push(Object::Number(unsafe { a.read_int() - b.read_int() }))?;
+
+        Ok(-1)
       },
       Self::SubF => {
-        let a = stack.pop_typechecked(ObjectType::Float)?;
         let b = stack.pop_typechecked(ObjectType::Float)?;
-        // SAFETY: type check complete above
+        let a = stack.pop_typechecked(ObjectType::Float)?;
+        // SAFETY: type check completed above
         stack.push(Object::Float(unsafe { a.read_float() - b.read_float() }))?;
-      },
-      Self::Push(object) => stack.push(object.to_owned())?,
-      Self::Pop => { stack.pop(); },
-    };
 
-    Ok(())
+        Ok(-1)
+      },
+      Self::Call => {
+        let func_obj = stack.pop_typechecked(ObjectType::Function)?;
+        // SAFETY: type check complete above
+        let func = unsafe { func_obj.read_func() };
+        Ok(func.call(vm)?)
+      }
+      Self::Push(object) => {
+        stack.push(object.to_owned())?;
+
+        Ok(1)
+      },
+      Self::Pop => { stack.pop(); Ok(0) },
+    }
   }
 }
