@@ -24,4 +24,25 @@ cd anusvm_repl
 cargo run
 ```
 
+## REPL examples
+### Defining new function & calling it
+```py
+# registering new function in VM's storage
+def test_add add 60 60
+# pushing new function (function pointer actually) on VM's stack
+getfn test_add
+# calling function from stack
+call
+```
+
+### Basic math operations
+```py
+add 5 6
+sub 4 2
+
+# float operations
+addf 34.55555 0.91
+subf 0.6666 0.3
+```
+
 ![important thing](./assets/javavm.png)
