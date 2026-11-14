@@ -28,6 +28,7 @@ impl Parser {
             "addf" => self.parse_two_float(&mut cursor, tokens, write_buffer, ByteCodeInstruction::AddF)?,
             "subf" => self.parse_two_float(&mut cursor, tokens, write_buffer, ByteCodeInstruction::SubF)?,
             "alloc" => self.parse_alloc(&mut cursor, tokens, write_buffer)?,
+            "pop" => write_buffer.push(ByteCodeInstruction::Pop),
             "def" => self.parse_definefn(&mut cursor, tokens, write_buffer)?,
             "getfn" => self.parse_getfn(&mut cursor, tokens, write_buffer)?,
             "call" => write_buffer.push(ByteCodeInstruction::Call),
