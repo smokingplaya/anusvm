@@ -28,6 +28,7 @@ pub struct Function {
 
 // constructors
 impl Function {
+  // TODO validation of function name
   pub fn new(name: String, arguments: Option<FunctionArguments>, executable_bytecode: ByteCode) -> Self {
     Self { name, arguments, executable: FunctionType::Bytecode(executable_bytecode) }
   }

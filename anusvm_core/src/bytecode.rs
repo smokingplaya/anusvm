@@ -9,13 +9,16 @@ pub enum ByteCodeInstruction {
   AddF,
   Sub,
   SubF,
-  Alloc(usize),
+  Alloc,
   Push(Object),
+  // todo remove String and just use stack.pop
+  GetFunc(String),
   DefFunc(Function),
   Call,
   Pop
 }
 
+// ma favorite spaghetti
 impl ByteCodeInstruction {
   // todo
   // (_, value)
@@ -72,8 +75,17 @@ impl ByteCodeInstruction {
 
         Ok(-1)
       },
-      Self::Alloc(bytes) => {
-        let obj_result = AllocatedMemory::new(vm, *bytes);
+      Self::Alloc => {
+        let bytes = match stack.pop() {
+          Object::Number(bytes) => bytes,
+          value => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+        };
+
+        if bytes <= 0 {
+          return Err(anyhow!(AnusVMStackError::AllocationFail(format!("an attempt to allocate {bytes} bytes failed"))));
+        }
+
+        let obj_result = AllocatedMemory::new(vm, bytes as usize);
 
         match obj_result {
           Ok(obj) => { vm.stack().push(Object::AllocatedMemory(obj)) },
@@ -82,21 +94,25 @@ impl ByteCodeInstruction {
 
         Ok(1)
       },
-      Self::DefFunc(_func) => {
-        // TODO: vm.func_map.insert(func.name(), func);
+      Self::GetFunc(func_name) => Ok(vm.get_function(func_name)?),
+      Self::DefFunc(func) => {
+        vm.set_function(func.to_owned())?;
         Ok(0)
       },
       Self::Call => {
-        let func = match stack.pop() {
-          Object::Function(func) => func,
+        let res = match stack.pop() {
+          Object::Function(func) => func.call(vm)?,
+          // NOT SAFE
+          // absolutely unsafe !!!!!
+          // TODO add some guarantee of ptr is valid
+          Object::FunctionPtr(func_ptr) => unsafe { &(*func_ptr) }.call(vm)?,
           value => return Err(anyhow!(MismatchedTypes(String::from("Function"), value.to_string())))
         };
 
-        Ok(func.call(vm)?)
+        Ok(res)
       }
       Self::Push(object) => {
         stack.push(object.to_owned())?;
-
         Ok(1)
       },
       Self::Pop => { stack.pop(); Ok(0) },

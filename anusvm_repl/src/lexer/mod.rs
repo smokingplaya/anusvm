@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use anyhow::anyhow;
 use crate::lexer::convertable_buffer::{ConvertableBuffer, ConvertableBufferError};
 
-const KEYWORDS: [&str; 8] = ["add", "addf", "sub", "subf", "alloc", "push", "pop", "def"];
+const KEYWORDS: [&str; 10] = ["add", "addf", "sub", "subf", "alloc", "push", "pop", "def", "getfn", "call"];
 
 mod convertable_buffer;
 

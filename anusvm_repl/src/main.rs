@@ -56,7 +56,7 @@ fn main() -> anyhow::Result<()> {
       }
     }
 
-    dbg!(&token_buffer);
+    // dbg!(&token_buffer);
 
     if let Err(err) = parser.parserize(token_buffer, &mut bytecode_buffer, None) {
       println!("{err}");
@@ -71,12 +71,15 @@ fn main() -> anyhow::Result<()> {
 
     println!("vm.execute elapsed {}ns", instant.elapsed().as_nanos());
 
+    bytecode_buffer.clear();
+
     let object = vm.stack().top();
 
     let to_print = match object {
       Object::Nil => continue,
       Object::Boolean(bool) => &bool.to_string(),
-      Object::Function(func) => func.name(),
+      Object::Function(func) => &format!("Function {}", func.name()),
+      Object::FunctionPtr(func) => &format!("Function {}", unsafe { &(*(*func)) }.name()),
       Object::Number(number) => &number.to_string(),
       Object::Float(float) => &float.to_string(),
       Object::AllocatedMemory(memory) => &format!("Allocated {} bytes {:p}", memory.len(), memory),
