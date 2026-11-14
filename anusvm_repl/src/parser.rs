@@ -36,6 +36,7 @@ impl Parser {
 
           match keyword.as_str() {
             "add" => self.parse_add(&mut cursor, tokens)?,
+            "alloc" => self.parse_alloc(&mut cursor, tokens)?,
             "definefn" => self.parse_definefn(&mut cursor, tokens)?,
             _ => {}
           }
@@ -75,7 +76,7 @@ impl Parser {
     }
 
     if index != 2 {
-      return Err(ParserError::InvalidArgument("command excepts two Number arguments".to_string()))
+      return Err(ParserError::InvalidSyntax("command excepts two Number arguments".to_string()))
     }
 
     Ok(buffer)
@@ -85,7 +86,7 @@ impl Parser {
     let buffer = self.parse_two_args::<isize, _>(cursor, tokens, |token| {
       match token {
         Token::Number(number) => Ok(*number),
-        _ => Err(ParserError::InvalidSyntax("expected Number, found unknown".to_string()))
+        _ => Err(ParserError::InvalidArgument("expected Number, found unknown".to_string()))
       }
     })?;
 
@@ -93,6 +94,23 @@ impl Parser {
     self.buffer.push(ByteCodeInstruction::Push(Object::Number(buffer[1])));
 
     self.buffer.push(ByteCodeInstruction::Add);
+
+    Ok(())
+  }
+
+  fn parse_alloc(&mut self, cursor: &mut usize, tokens: &[Token]) -> Result<(), ParserError> {
+    let bytes = match &tokens[*cursor] {
+      Token::Number(num) => Ok(num),
+      value => Err(ParserError::InvalidArgument(format!("expected Number, found {}", value.to_string())))
+    }?;
+
+    if bytes.is_negative() {
+      return Err(ParserError::InvalidArgument("byte count should be more than 0".to_string()));
+    }
+
+    *cursor += 1;
+
+    self.buffer.push(ByteCodeInstruction::Alloc(*bytes as usize));
 
     Ok(())
   }

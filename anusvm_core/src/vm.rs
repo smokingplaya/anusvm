@@ -2,7 +2,7 @@ use crate::{bytecode::ByteCode, stack::AnusVMStack};
 
 #[derive(Default, Debug, Clone)]
 pub struct AnusVM {
-  stack: AnusVMStack
+  stack: AnusVMStack,
 }
 
 impl AnusVM {
@@ -15,7 +15,7 @@ impl AnusVM {
   pub fn execute(&mut self, bytecode: &ByteCode) -> Result<i32, AnusVMError> {
     bytecode.iter()
       .try_fold(0, |acc, a| a.execute(self).map(|value| acc + value))
-      .map_err(|e| AnusVMError::InvalidByteCode(e.to_string()))
+      .map_err(|e| AnusVMError::RuntimeError(e.to_string()))
   }
 }
 
@@ -28,6 +28,6 @@ impl AnusVM {
 
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum AnusVMError {
-  #[error("InvalidByteCode: {0}")]
-  InvalidByteCode(String),
+  #[error("RuntimeError: {0}")]
+  RuntimeError(String),
 }

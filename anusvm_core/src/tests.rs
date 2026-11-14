@@ -6,28 +6,37 @@ fn number_addition() -> anyhow::Result<()> {
 
   let mut vm = AnusVM::new();
 
-  {
+  let mut accum = 0u128;
+
+  for _ in 0..1_000_000 {
+    {
+      let stack = vm.stack();
+      stack.push(Object::Number(2))?;
+      stack.push(Object::Number(4))?;
+    }
+
+    let test_instructions: Vec<ByteCodeInstruction> = vec![
+      ByteCodeInstruction::Add
+    ];
+
+    let i = std::time::Instant::now();
+    vm.execute(&test_instructions)?;
+    accum += i.elapsed().as_nanos();
+
     let stack = vm.stack();
-    stack.push(Object::Number(2))?;
-    stack.push(Object::Number(4))?;
+
+    assert!(stack.pop() == Object::Number(6));
   }
 
-  let test_instructions: Vec<ByteCodeInstruction> = vec![
-    ByteCodeInstruction::Add
-  ];
-
-  vm.execute(&test_instructions)?;
-
-  let stack = vm.stack();
-
-  assert!(stack.pop() == Object::Number(6));
+  println!("average {}ns", accum/1_000_000);
 
   Ok(())
 }
 
 #[test]
 fn test_bytecode_function() -> anyhow::Result<()> {
-  use crate::{object::Function, AnusVM, ByteCodeInstruction, Object, FunctionArguments, ObjectType};
+  use anyhow::bail;
+  use crate::{object::Function, AnusVM, ByteCodeInstruction, Object, FunctionArguments};
 
   let mut vm = AnusVM::new();
 
@@ -50,13 +59,14 @@ fn test_bytecode_function() -> anyhow::Result<()> {
     stack.push(Object::Function(func))?;
   }
 
-  let func_obj;
   let func;
   {
     let stack = vm.stack();
 
-    func_obj = stack.pop_typechecked(ObjectType::Function)?;
-    func = unsafe { func_obj.read_func() };
+    func = match stack.pop() {
+      Object::Function(func) => func,
+      _ => bail!("not function")
+    };
 
     stack.push(Object::Number(66))?;
     stack.push(Object::Number(128))?;
@@ -77,7 +87,8 @@ fn test_bytecode_function() -> anyhow::Result<()> {
 
 #[test]
 fn test_cfunc() -> anyhow::Result<()> {
-  use crate::{object::Function, AnusVM, Object, FunctionArguments, ObjectType};
+  use anyhow::bail;
+  use crate::{object::Function, AnusVM, Object, FunctionArguments};
 
   let mut vm = AnusVM::new();
 
@@ -92,13 +103,14 @@ fn test_cfunc() -> anyhow::Result<()> {
     stack.push(Object::Function(func))?;
   }
 
-  let func_obj;
   let func;
   {
     let stack = vm.stack();
 
-    func_obj = stack.pop_typechecked(ObjectType::Function)?;
-    func = unsafe { func_obj.read_func() };
+    func = match stack.pop() {
+      Object::Function(func) => func,
+      _ => bail!("not function")
+    };
 
     stack.push(Object::Number(66))?;
     stack.push(Object::Number(128))?;

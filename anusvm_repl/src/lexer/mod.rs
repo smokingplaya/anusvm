@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use anyhow::anyhow;
 use crate::lexer::convertable_buffer::{ConvertableBuffer, ConvertableBufferError};
 
-const KEYWORDS: [&str; 12] = ["add", "addf", "sub", "subf", "pushnil", "pushbool", "pushnum", "pushft", "pushstr", "pushfn", "pop", "definefn"];
+const KEYWORDS: [&str; 8] = ["add", "addf", "sub", "subf", "alloc", "push", "pop", "definefn"];
 
 mod convertable_buffer;
 
@@ -14,6 +14,18 @@ pub enum Token {
   Number(isize),
   Float(f32),
   String(String)
+}
+
+impl ToString for Token {
+  fn to_string(&self) -> String {
+    match self {
+      Token::Keyword(_) => "Keyword",
+      Token::Identifier(_) => "Identifier",
+      Token::Number(_) => "Number",
+      Token::Float(_) => "Float",
+      Token::String(_) => "String",
+    }.to_string()
+  }
 }
 
 // allocation hater

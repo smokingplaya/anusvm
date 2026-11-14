@@ -73,7 +73,7 @@ fn main() -> anyhow::Result<()> {
       Object::Function(func) => func.name(),
       Object::Number(number) => &number.to_string(),
       Object::Float(float) => &float.to_string(),
-      Object::String(string) => string,
+      Object::AllocatedMemory(memory) => &format!("Allocated {} bytes {:p}", memory.len(), memory),
       Object::Error => &"unknown error".to_string()
     };
 

@@ -1,5 +1,6 @@
-use anyhow::bail;
-use crate::{AnusVM, object::{Object, ObjectType}, stack::AnusVMStackError};
+use anyhow::anyhow;
+
+use crate::{AllocatedMemory, AnusVM, object::Object, stack::AnusVMStackError::{self, MismatchedTypes}};
 
 pub type ByteCode = Vec<ByteCodeInstruction>;
 
@@ -9,12 +10,17 @@ pub enum ByteCodeInstruction {
   AddF,
   Sub,
   SubF,
+  Alloc(usize),
   Push(Object),
   Call,
   Pop
 }
 
 impl ByteCodeInstruction {
+  // todo
+  // (_, value)
+  // value can be not number,
+  // and
   pub fn execute(&self, vm: &mut AnusVM) -> anyhow::Result<i32> {
     // why do math operations returns -1 instead of 1?
     // imagine the stack at this moment
@@ -27,42 +33,61 @@ impl ByteCodeInstruction {
     let stack = vm.stack();
     match self {
       Self::Add => {
-        let b = stack.pop_typechecked(ObjectType::Number)?;
-        let a = stack.pop_typechecked(ObjectType::Number)?;
+        match (stack.pop(), stack.pop()) {
+          (Object::Number(b), Object::Number(a)) => stack.push(Object::Number(a + b)),
+          (Object::Number(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          (value, Object::Number(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          _ => unreachable!()
+        }?;
 
-        // SAFETY: type check completed above
-        stack.push(Object::Number(unsafe { a.read_int() + b.read_int() }))?;
-
-        Ok::<_,anyhow::Error>(-1)
+        Ok(-1)
       },
       Self::AddF => {
-        let b = stack.pop_typechecked(ObjectType::Float)?;
-        let a = stack.pop_typechecked(ObjectType::Float)?;
-        // SAFETY: type check completed above
-        stack.push(Object::Float(unsafe { a.read_float() + b.read_float() }))?;
+        match (stack.pop(), stack.pop()) {
+          (Object::Float(b), Object::Float(a)) => stack.push(Object::Float(a + b)),
+          (Object::Number(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          (value, Object::Number(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          _ => unreachable!()
+        }?;
 
         Ok(-1)
       },
       Self::Sub => {
-        let b = stack.pop_typechecked(ObjectType::Number)?;
-        let a = stack.pop_typechecked(ObjectType::Number)?;
-        // SAFETY: type check completed above
-        stack.push(Object::Number(unsafe { a.read_int() - b.read_int() }))?;
+        match (stack.pop(), stack.pop()) {
+          (Object::Number(b), Object::Number(a)) => stack.push(Object::Number(a - b)),
+          (Object::Number(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          (value, Object::Number(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          _ => unreachable!()
+        }?;
 
         Ok(-1)
       },
       Self::SubF => {
-        let b = stack.pop_typechecked(ObjectType::Float)?;
-        let a = stack.pop_typechecked(ObjectType::Float)?;
-        // SAFETY: type check completed above
-        stack.push(Object::Float(unsafe { a.read_float() - b.read_float() }))?;
+        match (stack.pop(), stack.pop()) {
+          (Object::Float(b), Object::Float(a)) => stack.push(Object::Float(a - b)),
+          (Object::Number(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          (value, Object::Number(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          _ => unreachable!()
+        }?;
 
         Ok(-1)
       },
+      Self::Alloc(bytes) => {
+        let obj_result = AllocatedMemory::new(vm, *bytes);
+
+        match obj_result {
+          Ok(obj) => { let stack = vm.stack(); stack.push(Object::AllocatedMemory(obj)) },
+          Err(err) => return Err(anyhow!(AnusVMStackError::AllocationFail(err.to_string())))
+        }?;
+
+        Ok(1)
+      },
       Self::Call => {
-        let func_obj = stack.pop_typechecked(ObjectType::Function)?;
-        // SAFETY: type check complete above
-        let func = unsafe { func_obj.read_func() };
+        let func = match stack.pop() {
+          Object::Function(func) => func,
+          value => return Err(anyhow!(MismatchedTypes(String::from("Function"), value.to_string())))
+        };
+
         Ok(func.call(vm)?)
       }
       Self::Push(object) => {

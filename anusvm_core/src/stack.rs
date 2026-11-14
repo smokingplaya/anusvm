@@ -1,16 +1,22 @@
-use crate::object::{Object, ObjectType};
+use crate::object::Object;
 
 const STACK_SIZE: usize = 1024;
 
 pub struct AnusVMStackIndex(pub usize);
 
 impl AnusVMStackIndex {
+  #[inline]
   pub fn new(index: usize) -> Result<Self, AnusVMStackIndexError> {
     if index > STACK_SIZE {
       return Err(AnusVMStackIndexError::InvalidIndex)
     }
 
     Ok(Self(index))
+  }
+
+  #[inline]
+  pub unsafe fn raw(index: usize) -> Self {
+    Self(index)
   }
 }
 
@@ -73,29 +79,6 @@ impl AnusVMStack {
   }
 
   #[inline]
-  pub fn pop_typechecked(&mut self, object_type: ObjectType) -> Result<Object, AnusVMStackError> {
-    let value = self.pop();
-    let value_type = value.r#type();
-
-    if value_type != object_type {
-      return Err(AnusVMStackError::MismatchedTypes(object_type, value_type))
-    }
-
-    Ok(value)
-  }
-
-  pub fn get_typechecked(&self, index: AnusVMStackIndex, object_type: ObjectType) -> Result<&Object, AnusVMStackError> {
-    let value = self.get(index);
-    let value_type = value.r#type();
-
-    if value_type != object_type {
-      return Err(AnusVMStackError::MismatchedTypes(object_type, value_type))
-    }
-
-    Ok(value)
-  }
-
-  #[inline]
   pub fn snapshot(&self) -> &[Object] {
     &self.inner[0..self.len]
   }
@@ -124,5 +107,7 @@ pub enum AnusVMStackError {
   #[error("StackOverflow")]
   StackOverflow,
   #[error("MismatchedTypes: expected '{0:?}' received '{1:?}'")]
-  MismatchedTypes(ObjectType, ObjectType)
+  MismatchedTypes(String, String),
+  #[error("AllocationFail: {0}")]
+  AllocationFail(String)
 }
