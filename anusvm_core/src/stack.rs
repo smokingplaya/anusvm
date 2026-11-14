@@ -13,11 +13,6 @@ impl AnusVMStackIndex {
 
     Ok(Self(index))
   }
-
-  #[inline]
-  pub unsafe fn raw(index: usize) -> Self {
-    Self(index)
-  }
 }
 
 #[derive(thiserror::Error, Debug, Clone)]

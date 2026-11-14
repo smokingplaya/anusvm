@@ -28,6 +28,9 @@ fn main() -> anyhow::Result<()> {
 
   let stdin = stdin();
   let mut stdout = stdout();
+
+  let mut bytecode_buffer = Vec::with_capacity(64);
+
   loop {
     print!("> ");
     stdout.flush()?;
@@ -55,14 +58,17 @@ fn main() -> anyhow::Result<()> {
 
     dbg!(&token_buffer);
 
-    if let Err(err) = parser.parserize(token_buffer) {
+    if let Err(err) = parser.parserize(token_buffer, &mut bytecode_buffer, None) {
       println!("{err}");
       continue
     };
 
-    let bytecode = parser.buffer();
     let instant = Instant::now();
-    vm.execute(bytecode)?;
+
+    if let Err(err) = vm.execute(&bytecode_buffer) {
+      println!("{err}");
+    }
+
     println!("vm.execute elapsed {}ns", instant.elapsed().as_nanos());
 
     let object = vm.stack().top();
@@ -86,5 +92,5 @@ fn main() -> anyhow::Result<()> {
 
 fn debug_stack_info(vm: &mut AnusVM) {
   let stack = vm.stack();
-  println!("stackSize = {}, allocated memory = {}KiB", stack.stack_size(), stack.stack_allocated_memory() / 1024);
+  println!("stack size = {}, allocated stack memory = {}KiB", stack.stack_size(), stack.stack_allocated_memory() / 1024);
 }

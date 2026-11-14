@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use anyhow::anyhow;
 use crate::lexer::convertable_buffer::{ConvertableBuffer, ConvertableBufferError};
 
-const KEYWORDS: [&str; 8] = ["add", "addf", "sub", "subf", "alloc", "push", "pop", "definefn"];
+const KEYWORDS: [&str; 8] = ["add", "addf", "sub", "subf", "alloc", "push", "pop", "def"];
 
 mod convertable_buffer;
 
@@ -60,6 +60,7 @@ impl<'a> Lexer<'a> {
     }
 
     let mut chars = input.chars().collect::<Vec<char>>();
+
     while cursor < len {
       let char = chars.get(cursor).unwrap()
         .to_owned();
@@ -74,13 +75,29 @@ impl<'a> Lexer<'a> {
         self.collect_number(&mut cursor, &mut chars)?;
         // safety: right above
         self.buffer.push(Token::Number(unsafe { self.collectable_buffer.convert() }));
-      // Token::Identifier
+      // Token::Float
+      } else if char == '.' {
+        cursor += 1;
+
+        match self.buffer.pop() {
+          Some(token) => match token {
+            Token::Number(number) => {
+              self.collect_number(&mut cursor, &mut chars)?;
+
+              let fraction = unsafe { self.collectable_buffer.convert::<usize>() };
+              let анус = number as f32 + fraction as f32 / 100f32;
+              self.buffer.push(Token::Float(анус))
+            },
+            value => return Err(anyhow!(LexingError::MismatchedTypes("Number".to_string(), value.to_string())))
+          },
+          None => return Err(anyhow!(LexingError::InvalidSyntax(cursor + 1)))
+        };
+        // Token::Identifier
       } else if char == '\"' || char == '\'' {
         self.collect_string(&mut cursor, &mut chars)?;
         self.buffer.push(Token::String(unsafe { self.collectable_buffer.convert() }));
-      // Token::Float todo
-      // UnknownToken
-      } else if char.is_alphabetic() {
+      // Token::String
+      } else if char.is_alphabetic() || char == '_' {
         self.collect_ident(&mut cursor, &mut chars)?;
 
         let identifier = unsafe { self.collectable_buffer.convert::<String>() };
@@ -89,7 +106,6 @@ impl<'a> Lexer<'a> {
           true => self.buffer.push(Token::Keyword(identifier)),
           false => self.buffer.push(Token::Identifier(identifier)),
         };
-      // Token::String
       } else {
         return Err(anyhow!(LexingError::UnknownToken(char.to_owned(), cursor + 1)))
       }
@@ -112,11 +128,11 @@ impl<'a> Lexer<'a> {
 
       if predicate(char) {
         self.collectable_buffer.push(*char)?;
+        *cursor += 1;
       } else {
+        *cursor -= 1;
         break
       }
-
-      *cursor += 1;
     }
 
     Ok(())
@@ -124,18 +140,12 @@ impl<'a> Lexer<'a> {
 
   #[inline(always)]
   fn collect_ident(&mut self, cursor: &mut usize, chars: &mut Vec<char>) -> Result<(), ConvertableBufferError> {
-    self.collect_symbols(cursor, chars, |char| char.is_alphabetic())
+    self.collect_symbols(cursor, chars, |char| char.is_alphabetic() || *char == '_')
   }
 
   #[inline(always)]
   fn collect_number(&mut self, cursor: &mut usize, chars: &mut Vec<char>) -> Result<(), ConvertableBufferError> {
     self.collect_symbols(cursor, chars, |char| char.is_ascii_digit())
-  }
-
-  #[inline(always)]
-  fn collect_float(&mut self, cursor: &mut usize, chars: &mut Vec<char>) -> Result<(), ConvertableBufferError> {
-    // todo
-    self.collect_symbols(cursor, chars, |char| char.is_digit(10))
   }
 
   #[inline(always)]
@@ -154,5 +164,9 @@ impl<'a> Lexer<'a> {
 #[derive(thiserror::Error, Debug)]
 pub enum LexingError {
   #[error("Unknown token '{0}' ({1})")]
-  UnknownToken(char, usize)
+  UnknownToken(char, usize),
+  #[error("Invalid syntax on {0}")]
+  InvalidSyntax(usize),
+  #[error("expected {0} found {0}")]
+  MismatchedTypes(String, String)
 }

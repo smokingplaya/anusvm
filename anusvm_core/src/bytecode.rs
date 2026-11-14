@@ -1,6 +1,5 @@
 use anyhow::anyhow;
-
-use crate::{AllocatedMemory, AnusVM, object::Object, stack::AnusVMStackError::{self, MismatchedTypes}};
+use crate::{AllocatedMemory, AnusVM, Function, object::Object, stack::AnusVMStackError::{self, MismatchedTypes}};
 
 pub type ByteCode = Vec<ByteCodeInstruction>;
 
@@ -12,6 +11,7 @@ pub enum ByteCodeInstruction {
   SubF,
   Alloc(usize),
   Push(Object),
+  DefFunc(Function),
   Call,
   Pop
 }
@@ -45,8 +45,8 @@ impl ByteCodeInstruction {
       Self::AddF => {
         match (stack.pop(), stack.pop()) {
           (Object::Float(b), Object::Float(a)) => stack.push(Object::Float(a + b)),
-          (Object::Number(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
-          (value, Object::Number(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          (Object::Float(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Float"), value.to_string()))),
+          (value, Object::Float(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Float"), value.to_string()))),
           _ => unreachable!()
         }?;
 
@@ -65,8 +65,8 @@ impl ByteCodeInstruction {
       Self::SubF => {
         match (stack.pop(), stack.pop()) {
           (Object::Float(b), Object::Float(a)) => stack.push(Object::Float(a - b)),
-          (Object::Number(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
-          (value, Object::Number(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Number"), value.to_string()))),
+          (Object::Float(_), value) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Float"), value.to_string()))),
+          (value, Object::Float(_)) => return Err(anyhow!(AnusVMStackError::MismatchedTypes(String::from("Float"), value.to_string()))),
           _ => unreachable!()
         }?;
 
@@ -76,11 +76,15 @@ impl ByteCodeInstruction {
         let obj_result = AllocatedMemory::new(vm, *bytes);
 
         match obj_result {
-          Ok(obj) => { let stack = vm.stack(); stack.push(Object::AllocatedMemory(obj)) },
+          Ok(obj) => { vm.stack().push(Object::AllocatedMemory(obj)) },
           Err(err) => return Err(anyhow!(AnusVMStackError::AllocationFail(err.to_string())))
         }?;
 
         Ok(1)
+      },
+      Self::DefFunc(_func) => {
+        // TODO: vm.func_map.insert(func.name(), func);
+        Ok(0)
       },
       Self::Call => {
         let func = match stack.pop() {

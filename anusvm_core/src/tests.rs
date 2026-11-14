@@ -36,7 +36,7 @@ fn number_addition() -> anyhow::Result<()> {
 #[test]
 fn test_bytecode_function() -> anyhow::Result<()> {
   use anyhow::bail;
-  use crate::{object::Function, AnusVM, ByteCodeInstruction, Object, FunctionArguments};
+  use crate::{object::Function, AnusVM, ByteCodeInstruction, Object};
 
   let mut vm = AnusVM::new();
 
@@ -55,7 +55,7 @@ fn test_bytecode_function() -> anyhow::Result<()> {
 
     // currently function.name is unused
     // and function doesn't stored anywhere so
-    let func = Function::new("test".to_string(), FunctionArguments {}, bytecode);
+    let func = Function::new("test".to_string(), None, bytecode);
     stack.push(Object::Function(func))?;
   }
 
@@ -88,7 +88,7 @@ fn test_bytecode_function() -> anyhow::Result<()> {
 #[test]
 fn test_cfunc() -> anyhow::Result<()> {
   use anyhow::bail;
-  use crate::{object::Function, AnusVM, Object, FunctionArguments};
+  use crate::{object::Function, AnusVM, Object};
 
   let mut vm = AnusVM::new();
 
@@ -99,7 +99,7 @@ fn test_cfunc() -> anyhow::Result<()> {
     let func: extern "C" fn(&mut AnusVMStack) -> i32 = non_test_cfunction;
     // currently function.name is unused
     // and function doesn't stored anywhere so
-    let func = Function::new_from_cfunc("test".to_string(), FunctionArguments {}, &func)?;
+    let func = Function::new_from_cfunc("test".to_string(), None, &func)?;
     stack.push(Object::Function(func))?;
   }
 

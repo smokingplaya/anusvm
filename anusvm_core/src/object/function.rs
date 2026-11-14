@@ -22,17 +22,17 @@ pub struct FunctionArguments {
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct Function {
   name: String,
-  arguments: FunctionArguments,
+  arguments: Option<FunctionArguments>,
   executable: FunctionType
 }
 
 // constructors
 impl Function {
-  pub fn new(name: String, arguments: FunctionArguments, executable_bytecode: ByteCode) -> Self {
+  pub fn new(name: String, arguments: Option<FunctionArguments>, executable_bytecode: ByteCode) -> Self {
     Self { name, arguments, executable: FunctionType::Bytecode(executable_bytecode) }
   }
 
-  pub fn new_from_cfunc(name: String, arguments: FunctionArguments, func: FunctionTypeCFunc) -> Result<Self, FunctionError> {
+  pub fn new_from_cfunc(name: String, arguments: Option<FunctionArguments>, func: FunctionTypeCFunc) -> Result<Self, FunctionError> {
     if func.is_null() {
       return Err(FunctionError::InvalidFunctionPointer)
     }

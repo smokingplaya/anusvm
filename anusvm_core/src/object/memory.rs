@@ -9,7 +9,7 @@ pub struct AllocatedMemory {
 }
 
 impl AllocatedMemory {
-  pub fn new(vm: &mut AnusVM, len: usize) -> Result<Self> {
+  pub fn new(_vm: &mut AnusVM, len: usize) -> Result<Self> {
     Ok(Self { memory: Vec::with_capacity(len) })
   }
 }
@@ -21,7 +21,24 @@ impl AllocatedMemory {
   }
 
   #[inline]
-  pub fn read<'a>(&'a self, offset: usize, count: usize) -> &'a [u8] {
-    &self.memory[offset..count]
+  pub fn read<'a>(&'a self, offset: usize, len: usize) -> &'a [u8] {
+    &self.memory[offset..len]
   }
+
+  // TODO: wrong offset/data.len threatens to break struct layout
+  pub fn write<'a>(&'a mut self, offset: usize, data: &[u8]) -> Result<(), AllocatedMemoryError> {
+    if offset + data.len() > self.len() {
+      return Err(AllocatedMemoryError::OutOfBounds);
+    }
+
+    self.memory[offset..offset+data.len()].copy_from_slice(&data[0..data.len()]);
+
+    Ok(())
+  }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum AllocatedMemoryError {
+  #[error("OutOfBounds")]
+  OutOfBounds
 }
