@@ -1,48 +1,30 @@
-![anusVM](./assets/logo.png)
+<div align="center">
+  <img src="./assets/anusvm_logo.png" width="30%"/>
 
-anus Virtual Machine™
+  Slow-first virtual machine
+
+  <img src="https://img.shields.io/github/actions/workflow/status/smokingplaya/anusvm/build.yml">
+  <img src="https://img.shields.io/github/release/smokingplaya/anusvm.svg">
+  <img src="https://img.shields.io/github/issues/smokingplaya/anusvm.svg">
+  <img src="https://img.shields.io/github/license/smokingplaya/anusvm.svg">
+</div>
+
 ---
 
-This repository contains `REPL` for interacting with `anusVM™ bytecode`, and anusVM implementation\
-Just a pet project
+### Getting started
+anusvm is a slow-speed-oriented virtual machine, you are NOT allowed to write fast code on it. Yeah
 
-You probbly love to see [tests](./anusvm_core/src/tests.rs) (they're shows how to work with anusVM™)
+### What's wrong with name of it?
+Nothing. ™
 
-## Features
-- [ ] Functions
-  - [ ] Arguments
-  - [ ] Frames
-  - [ ] Return values
-  - [x] C Functions
-- [x] Basic math operations `Add`, `Sub`, `AddF`, `SubF`
+### How can i use anusVM™?
+Thanks.
 
-## Usage
-```sh
-# anusVM REPL is only way to interact with anusVM (for a while)
-cd anusvm_repl
-# building & running REPL
-cargo run
-```
+### Can i contribute to the anusVM™?
+Probablyust blame everything :shipit: on you\
+At least you know tha
 
-## REPL examples
-### Defining new function & calling it
-```py
-# registering new function in VM's storage
-def test_add add 60 60
-# pushing new function (function pointer actually) on VM's stack
-getfn test_add
-# calling function from stack
-call
-```
-
-### Basic math operations
-```py
-add 5 6
-sub 4 2
-
-# float operations
-addf 34.55555 0.91
-subf 0.6666 0.3
-```
-
-![important thing](./assets/javavm.png)
+<!-- ALWAYS should be in the end of the file -->
+<div align="center">
+  <img src="./assets/authors.png" width="90%"/>
+</div>
