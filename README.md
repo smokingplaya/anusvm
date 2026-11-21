@@ -11,11 +11,18 @@
 
 ---
 
-### Getting started
-anusvm is a slow-speed-oriented virtual machine, you are NOT allowed to write fast code on it. Yeah
+## Getting started
+anusVM is a slow-speed-oriented virtual machine, you are NOT allowed to write fast code on it. Yeah
+
+### See it in action
+Right now anusVM™ is in early stages of development, so for now you can only see the tests that I™ occasionally write.
+- [vm::namespace::tests::validate_namespaces](./anusvm_core/src/vm/namespace/tests.rs) *passed successfully on 21.11.2026 20:57:38.0242 UTC™
+
+## QnA
 
 ### What's wrong with name of it?
-Nothing. ™
+Nothing.\
+™
 
 ### How can i use anusVM™?
 Thanks.
@@ -28,3 +35,5 @@ At least you know tha
 <div align="center">
   <img src="./assets/authors.png" width="90%"/>
 </div>
+
+smokingplaya® x HumanCoding Inc. x mind recognition Limited. © 2026™
