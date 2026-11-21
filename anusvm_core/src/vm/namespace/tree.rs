@@ -1,3 +1,10 @@
+// prelude: i bet there is a better way to implement something like this
+// but i don't have any ideas about it
+// so ermm
+// ™™™™
+//
+// remember that anusVM is "slow-first virtual machine"?
+
 use std::collections::HashMap;
 use crate::vm::{namespace::Namespace, object::Object};
 
@@ -31,6 +38,7 @@ impl NamespaceTree {
     let mut tree_ref = self;
 
     // this loop is really sexpensive
+    // slow™ af
     for part in lsp {
       tree_ref = match tree_ref.inner
         .entry(part.to_owned())

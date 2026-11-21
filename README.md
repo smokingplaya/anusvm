@@ -17,6 +17,7 @@ anusVM is a slow-speed-oriented virtual machine, you are NOT allowed to write fa
 ### See it in action
 Right now anusVM™ is in early stages of development, so for now you can only see the tests that I™ occasionally write.
 - [vm::namespace::tests::validate_namespaces](./anusvm_core/src/vm/namespace/tests.rs) *passed successfully on 21.11.2026 20:57:38.0242 UTC™
+- [vm::tests::vm_check_namespacetree](./anusvm_core/src/vm/tests.rs) *passed successfully on 21.11.2026 22:35:19.0803 UTC™
 
 ## QnA
 
@@ -33,6 +34,13 @@ At least you know tha
 
 ### Any plans on JIT?
 :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: huh
+anusVM™ is SLOW™-first virtual machine\
+we don't like to doing things fast
+<div align="center">
+  <img src="https://media1.tenor.com/m/T7eqVK6--PkAAAAd/peter-griffin-popular-vibe.gif" alt="geter priffin hello kitty"/>
+</div>
+
+---
 
 <!-- ALWAYS should be in the end of the file -->
 <div align="center">
