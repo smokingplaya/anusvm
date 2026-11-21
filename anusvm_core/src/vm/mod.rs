@@ -2,15 +2,23 @@ mod namespace;
 mod config;
 mod object;
 mod stack;
+mod tests;
 
+#[derive(Default, Debug)]
 pub struct AnusVM {
   configuration: config::Configuration,
   stack: stack::Stack,
   namespace: namespace::NamespaceTree
 }
 
-fn main() {
-  // let vm = AnusVM::new();
+impl AnusVM {
+  #[inline]
+  pub fn global_namespace(&self) -> &namespace::NamespaceTree {
+    &self.namespace
+  }
 
-  // vm.insert(Namespace::from("std::somemodule::somestruct::Func")?, Object::Function(todo!()));
+  #[inline]
+  pub fn global_namespace_mut(&mut self) -> &mut namespace::NamespaceTree {
+    &mut self.namespace
+  }
 }
