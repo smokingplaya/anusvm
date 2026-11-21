@@ -31,6 +31,9 @@ Thanks.
 Probablyust blame everything :shipit: on you\
 At least you know tha
 
+### Any plans on JIT?
+:trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: :trollface: huh
+
 <!-- ALWAYS should be in the end of the file -->
 <div align="center">
   <img src="./assets/authors.png" width="90%"/>
