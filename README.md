@@ -35,5 +35,3 @@ At least you know tha
 <div align="center">
   <img src="./assets/authors.png" width="90%"/>
 </div>
-
-smokingplaya® x HumanCoding Inc. x mind recognition Limited. © 2026™
