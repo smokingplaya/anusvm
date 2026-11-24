@@ -45,7 +45,8 @@ impl NamespaceTree {
         .or_insert_with(|| NamespaceTreeValue::Tree(Self::new()))
       {
         NamespaceTreeValue::Tree(tree) => tree,
-        NamespaceTreeValue::Object(_) => unreachable!()
+        NamespaceTreeValue::Object(_) => unreachable!() // todo it is very veri reachable
+        // ™ fuck
       };
     }
 
